@@ -1,0 +1,14 @@
+---
+  - name: Remove PGSQL Repository
+    yum:
+       name: 
+       - https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+       state: absent
+
+  - name: Remove PostgreSQL 12
+    yum:
+       name:
+        - postgresql12 
+        - postgresql12-server
+       state: absent
+...

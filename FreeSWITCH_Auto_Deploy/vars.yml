@@ -1,0 +1,18 @@
+---
+# FreeSWITCH Variables
+fs_domain: fs.graypit.com 
+fs_srv: "{{ ansible_default_ipv4.address }}"
+# Web Application Variables
+web_domain: cc.graypit.com 
+web_path: /var/www/public_html/{{ web_domain }}
+web_srv: "{{ ansible_default_ipv4.address }}"
+# PostgreSQL Variables
+pg_def: postgres
+pg_db: fsdb
+pg_user: fsuser
+pg_pass: V3ryStr00ngP@ssw0RD
+pg_privileges: SELECT,INSERT,UPDATE,DELETE
+pg_srv: "{{ ansible_default_ipv4.address }}"
+...
+
+

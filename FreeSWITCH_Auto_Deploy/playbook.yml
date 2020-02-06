@@ -1,0 +1,21 @@
+---
+- hosts: FreeSWITCH_SRV
+  become: true
+  gather_facts: yes
+  vars_files:
+     - vars.yml
+  tasks:
+     - include: tasks/global_packages.yml
+
+     - include: tasks/freeswitch.yml
+
+     - name: Create Certificates
+       shell: ./scripts/create_cert.sh {{ web_domain }}
+
+     - include: tasks/pgsql.yml
+
+     - include: tasks/nginx_and_php.yml
+
+     - name: Delete Temporary Files
+       shell: rm -rf {{ playbook_dir }}/*.log
+...

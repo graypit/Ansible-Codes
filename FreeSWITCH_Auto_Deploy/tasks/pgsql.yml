@@ -1,0 +1,97 @@
+---
+  - name: Add a PostgreSQL signing key
+    apt_key:
+      url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+      state: present
+
+  - name: Adding PGSQL Repository
+    apt_repository:
+      repo: deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main
+      state: present
+      filename: pgsql
+    
+  - name: Update All Repositories
+    apt:
+      update_cache: yes
+
+  - name: Installing PostgreSQL 10
+    apt:
+      pkg: 
+      - postgresql-10
+      state: present
+    register: install_pgsql
+    tags:
+      - install_pgsql
+
+  - name: Replace Max Connection size in PGSQL config file
+    lineinfile:
+      path: /etc/postgresql/10/main/postgresql.conf
+      regexp: 'max_connections = 100'
+      line: max_connections = 1000
+
+  - name: Change Listener IP Address to {{ pg_srv }}
+    blockinfile:
+      path: /etc/postgresql/10/main/postgresql.conf
+      block: listen_addresses = '{{ pg_srv }}'
+
+  - name: Updating PG_HBA file
+    blockinfile:
+      path: /etc/postgresql/10/main/pg_hba.conf
+      block: host    all             all             {{ pg_srv }}/32         md5
+
+  - name: Create PGSQL database
+    postgresql_db:
+      name: "{{ pg_db }}"
+    become: true
+    become_user: "{{ pg_def }}"
+  
+  - name: Create PGSQL User
+    postgresql_user:
+      name: "{{ pg_user }}"
+      password: "{{ pg_pass }}"
+    become: yes
+    become_user: "{{ pg_def }}"
+
+  - name: Grant all privileges
+    postgresql_privs:
+      db: "{{ pg_db }}"
+      role: "{{ pg_user }}"
+      objs: ALL_IN_SCHEMA
+      privs: "{{ pg_privileges }}"
+    become: yes
+    become_user: "{{ pg_def }}"
+
+  - name: Change kernel shmmax size
+    sysctl:
+      name: kernel.shmmax
+      value: '18446744073692774399'
+      sysctl_file: /etc/sysctl.conf
+      state: present
+      reload: yes
+
+  - name: Restart PostgreSQL
+    systemd:
+      name: postgresql
+      state: restarted
+
+  - name: Enable PostgreSQL Service
+    systemd:
+      name: postgresql
+      enabled: yes
+      masked: no
+
+  - name: Updating ODBC Configuration
+    template: 
+      src: templates/odbc.ini.j2
+      dest: /etc/odbc.ini
+
+  - name: Updating ODBC Inst Configuration
+    template: 
+      src: templates/odbcinst.ini.j2
+      dest: /etc/odbcinst.ini
+
+  - name: Check ODBC Connection
+    shell: isql {{ pg_db }}
+    register: check_odbc
+  - debug: var=check_odbc.stdout_lines
+...

@@ -1,0 +1,39 @@
+server {
+    server_tokens off;
+    listen 443 ssl ;
+    server_name www.{{ web_domain }} {{ web_domain }};
+    root /var/www/public_html/{{ web_domain }}/;
+    ssl_certificate /etc/nginx/certs/{{ web_domain }}.crt;
+    ssl_certificate_key /etc/nginx/certs/{{ web_domain }}.key;
+    ssl_session_cache shared:SSL:1m;
+    ssl_session_timeout  10m;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    location / {
+        try_files $uri /index.html$is_args$args;
+    }
+    ## Disable .htaccess and other hidden files
+    location ~ /\.(?!well-known).* {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php7.2-fpm.sock;
+    }
+    error_log /var/log/nginx/{{ web_domain }}.error.log;
+    access_log /var/log/nginx/{{ web_domain }}.access.log;
+}
+
+server {
+    if ($host = www.{{ web_domain }}) {
+        return 301 https://$host$request_uri;
+    }
+    if ($host = {{ web_domain }}) {
+        return 301 https://$host$request_uri;
+    }
+    listen       80;
+    server_name www.{{ web_domain }} {{ web_domain }};
+    return 404;
+}

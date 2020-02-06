@@ -1,0 +1,9 @@
+[{{ pg_db }}]
+Driver = PostgreSQL Unicode
+Description = FS PGSQL ODBC Configuration
+Servername = {{ ansible_default_ipv4.address }}
+Port = 5432
+Protocol = 10
+UserName = {{ pg_user }}
+Password = {{ pg_pass }}
+Database = {{ pg_db }}

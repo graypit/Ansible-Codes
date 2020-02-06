@@ -1,0 +1,10 @@
+---
+- hosts: PGSQL
+  become: true
+  gather_facts: yes
+  vars_files:
+     - vars/GlobalVars.yml
+     - vars/PG_Vars.yml
+  tasks:
+     - include: included/{{ please }}.yml
+...

@@ -1,0 +1,17 @@
+---
+  - name: Cloning PostgreSQL Configuration files from SCM
+    git: 
+      repo: "https://{{ GitUser }}:{{ GitPassword | urlencode }}@{{ GitUrl }}/{{ GitAccount }}/{{ GitRepoName }}.git"
+      dest: /tmp/pg-confs
+
+  - name: Updating PostgreSQL Configuration files from SCM
+    copy:
+      src: /tmp/pg-confs/
+      dest: /var/lib/pgsql/12/data/
+      remote_src: yes
+    
+  - name: Restart PostgreSQL 12 Service
+    systemd:
+      name: postgresql-12
+      state: restarted
+...

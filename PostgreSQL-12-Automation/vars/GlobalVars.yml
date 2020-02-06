@@ -1,0 +1,8 @@
+---
+# SCM Credentials Variables
+GitUser: some-user
+GitPassword: 'Sup33rP@ssw0rrrd'
+GitUrl: github.com
+GitAccount: graypit
+GitRepoName: postgresql-configurations
+...

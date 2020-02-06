@@ -1,0 +1,69 @@
+---
+  - name: Import PGSQL Repository
+    yum:
+       name: 
+       - https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+       - epel-release
+       state: present 
+
+  - name: Install PostgreSQL 12
+    yum:
+       name:
+        - python-pip
+        - postgresql12 
+        - postgresql12-server
+        - python-psycopg2
+       state: present
+
+  - name: Initialize Database
+    shell: /usr/pgsql-12/bin/postgresql-12-setup initdb
+    ignore_errors: yes
+    failed_when: false
+
+  - name: Updating Configuration from Templates
+    template: 
+      src: "{{ item.src }}"       
+      dest: "{{ item.dest }}"  
+    with_items:
+       - { src: 'templates/pg_hba.conf.j2',dest: '/var/lib/pgsql/12/data/pg_hba.conf'}   
+       - { src: 'templates/pg_ident.conf.j2',dest: '/var/lib/pgsql/12/data/pg_ident.conf'}   
+       - { src: 'templates/postgresql.conf.j2',dest: '/var/lib/pgsql/12/data/postgresql.conf'}   
+
+  - name: Start PostgreSQL 12 Service
+    systemd:
+      name: postgresql-12
+      state: started
+
+  - name: Create PGSQL Database
+    postgresql_db:
+      name: "{{ PG_Database }}"
+    become: true
+    become_user: "{{ PG_Def }}"
+    
+  - name: Create PGSQL User
+    postgresql_user:
+      name: "{{ PG_Username }}"
+      password: "{{ PG_Password }}"
+    become: yes
+    become_user: "{{ PG_Def }}"
+
+  - name: Grant All Privileges
+    postgresql_privs:
+      db: "{{ PG_Database }}"
+      role: "{{ PG_Username }}"
+      objs: ALL_IN_SCHEMA
+      privs: "{{ PG_Privileges }}"
+    become: yes
+    become_user: "{{ PG_Def }}"
+
+  - name: Restart PostgreSQL 12 Service
+    systemd:
+      name: postgresql-12
+      state: restarted
+
+  - name: Enable PostgreSQL 12 Service
+    systemd:
+      name: postgresql-12
+      enabled: yes
+      masked: no
+...

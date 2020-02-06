@@ -1,0 +1,21 @@
+--- 
+  - name: Installing Main Depends 
+    apt:
+      pkg:
+      - aptitude
+      - sudo
+      - net-tools
+      - vim
+      - ntpdate
+      - tcpdump
+      - telnet
+      - ftp
+      - curl
+      - jq
+      - tmux
+      - python-psycopg2
+      state: present
+    register: install_deps
+    tags:
+        - install_deps
+...

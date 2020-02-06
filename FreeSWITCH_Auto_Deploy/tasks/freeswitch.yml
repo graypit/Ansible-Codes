@@ -1,0 +1,47 @@
+---
+  - name: Add a FreeSWITCH signing key
+    apt_key:
+      url: https://files.freeswitch.org/repo/deb/freeswitch-1.8/fsstretch-archive-keyring.asc
+      state: present
+
+  - name: Adding FS Repositories
+    apt_repository:
+      repo: deb http://files.freeswitch.org/repo/deb/freeswitch-1.8/ stretch main
+      state: present
+      filename: freeswitch
+
+  - name: Adding FS Repositories yet
+    apt_repository:
+      repo: deb-src http://files.freeswitch.org/repo/deb/freeswitch-1.8/ stretch main
+      state: present
+      filename: freeswitch
+  
+  - name: Update All Repositories
+    apt:
+      update_cache: yes
+  
+  - name: Installing FreeSWITCH
+    apt:
+      pkg: 
+      - freeswitch-meta-all
+      - freeswitch-mod-v8
+      state: present
+    register: install_fs
+
+
+  - name: Installing ODBC
+    apt:
+      pkg: 
+      - unixodbc
+      - odbc-postgresql
+      state: present
+    register: install_odbc
+    tags:
+      - install_odbc
+
+  - name: Enable FreeSWITCH Service
+    systemd:
+      name: freeswitch
+      enabled: yes
+      masked: no
+...

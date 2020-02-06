@@ -1,0 +1,11 @@
+PG_Def: postgres # Do not change it | PostgreSQL Default User
+PG_Database: mydb
+PG_Username: mydbuser
+PG_Password: mydbsuperpassword
+PG_Privileges: SELECT,INSERT,UPDATE,DELETE
+PG_Server: '127.0.0.1'
+# PostgreSQL Configuration Variables
+PG_Listener: "'{{ ansible_default_ipv4.address }}'"
+# Config: pg_hba.conf Variables
+DefaultLo: '127.0.0.1/32'
+AdditionalAccess: "{{ ansible_default_ipv4.address }}/32"

@@ -1,0 +1,207 @@
+---
+  - name: Installing NGINX
+    apt:
+      pkg: 
+      - nginx
+      state: present
+    register: install_nginx
+    tags:
+      - install_nginx
+
+  - name: Start NGINX Service
+    systemd:
+      name: nginx
+      state: started
+
+  - name: Enable NGINX Service
+    systemd:
+      name: nginx
+      enabled: yes
+      masked: no
+
+  - name: Installing PHP 7.2 Depends
+    apt:
+      pkg: 
+      - apt-transport-https
+      - ca-certificates
+      - software-properties-common
+      state: present
+    register: install_php_dep
+    tags:
+      - install_php_dep
+
+  - name: Add a PHP7.2 signing key
+    apt_key:
+      url: https://packages.sury.org/php/apt.gpg
+      state: present
+
+  - name: Adding PHP7.2 Repository
+    apt_repository:
+      repo: deb https://packages.sury.org/php/ stretch main
+      state: present
+      filename: php
+
+  - name: Update All Repositories
+    apt:
+      update_cache: yes
+
+  - name: Installing PHP 7.2 // PHP7.2-FPM  + Modules
+    apt:
+      pkg: 
+      - php7.2-common
+      - php7.2-cli
+      - php7.2-fpm
+      - php7.2-zip
+      - php7.2-bcmath
+      - php7.2-mbstring
+      - php7.2-gd
+      - php7.2-xml
+      - php7.2-dev
+      - php7.2-curl
+      - composer
+      state: present
+    register: install_nginx
+    tags:
+      - install_php
+
+  - name: Start PHP7.2-FPM Service
+    systemd:
+      name: php7.2-fpm
+      state: started
+
+  - name: Enable NGINX Service
+    systemd:
+      name: php7.2-fpm
+      enabled: yes
+      masked: no
+
+  - name: Add a SQLSRV signing key
+    apt_key:
+      url: https://packages.microsoft.com/keys/microsoft.asc
+      state: present
+
+  - name: Adding SQLSRV Repository
+    apt_repository:
+      repo: deb [arch=amd64] https://packages.microsoft.com/debian/9/prod stretch main
+      state: present
+      filename: sqlsrv
+
+  - name: Update All Repositories
+    apt:
+      update_cache: yes
+
+  - name: Installing SQLSRV Depends
+    apt:
+      pkg: 
+      - msodbcsql17
+      - mssql-tools
+      - unixodbc-dev
+      state: present
+    environment:
+      - ACCEPT_EULA: 'y'
+    register: install_sqlsrv_dep
+    tags:
+      - install_sqlsrv_dep
+
+  - name: Add Global Varible to bash.profile
+    blockinfile:
+      path: ~/.bash_profile
+      block: export PATH="$PATH:/opt/mssql-tools/bin"
+
+  - name: Add Global Varible to bashrc
+    blockinfile:
+      path: ~/.bashrc
+      block: export PATH="$PATH:/opt/mssql-tools/bin"
+
+  - name: Source bashrc file
+    sudo: no 
+    shell: source ~/.bashrc
+    args:
+     executable: /bin/bash
+
+  - name: Replace Locale
+    lineinfile:
+      path: /etc/locale.gen
+      regexp: '# en_US.UTF-8 UTF-8'
+      line: en_US.UTF-8 UTF-8   
+
+  - name: Run Locale Gen
+    shell: locale-gen
+
+  - name: Updating Pecl Channel
+    shell: pecl channel-update pecl.php.net
+
+  - pear:
+      name: pecl/sqlsrv
+      state: present
+
+  - pear:
+      name: pecl/pdo_sqlsrv
+      state: present
+
+  - name: Updating SQLSRV.ini
+    blockinfile:
+      path: /etc/php/7.2/mods-available/sqlsrv.ini
+      block: |
+        ; priority=20
+        extension=sqlsrv.so
+      create: yes
+
+  - name: Updating PDO_SQLSRV.ini
+    blockinfile:
+      path: /etc/php/7.2/mods-available/pdo_sqlsrv.ini
+      block: |
+        ; priority=30
+        extension=pdo_sqlsrv.so
+      create: yes
+
+  - name: Update PHPENMOD
+    shell: phpenmod -v 7.2 sqlsrv pdo_sqlsrv
+
+  - name: Creating NGINX VirtualHost Configuration File
+    template: 
+      src: templates/nginxVhost.j2
+      dest: /etc/nginx/conf.d/{{ web_domain }}.conf
+
+  - name: Create NGINX Certs Directory
+    file:
+      path: /etc/nginx/certs
+      state: directory
+
+  - name: Create WEB APP Folder
+    file:
+      path: "{{ web_path }}"
+      state: directory
+      owner: www-data
+      group: www-data
+      mode: 0777
+      recurse: yes
+
+  - name: Updating Hosts file
+    blockinfile:
+      path: /etc/hosts
+      block: |
+        {{ web_srv }}    {{ web_domain }}
+        {{ fs_srv }}    {{ fs_domain }}
+  
+  - name: Adding certificates to NGINX
+    copy:
+      src: "{{ item }}"
+      dest: /etc/nginx/certs/
+    with_items:
+      - ../scripts/certs/{{ web_domain }}.crt
+      - ../scripts/certs/{{ web_domain }}.key
+      - ../scripts/certs/ca.crt
+
+  - name: Restart PHP7.2-FPM Service
+    systemd:
+      name: php7.2-fpm
+      state: restarted
+
+  - name: Restart NGINX Service
+    systemd:
+      name: nginx
+      state: restarted     
+
+
+...

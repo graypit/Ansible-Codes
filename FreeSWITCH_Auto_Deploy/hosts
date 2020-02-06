@@ -1,0 +1,2 @@
+[FreeSWITCH]
+FreeSWITCH_SRV ansible_connection=local

@@ -1,0 +1,7 @@
+[PGSQL]
+PGSQL_SERVER
+[PGSQL:vars]
+ansible_ssh_host=192.168.150.137
+ansible_ssh_port=22
+ansible_user=root
+ansible_ssh_pass=123456
