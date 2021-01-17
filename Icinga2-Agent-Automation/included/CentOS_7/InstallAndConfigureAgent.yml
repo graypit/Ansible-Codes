@@ -1,0 +1,64 @@
+---
+- name: Import Icinga2 Repository
+  yum:
+     name: 
+     - https://packages.icinga.com/epel/icinga-rpm-release-7-latest.noarch.rpm
+     - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+     state: present 
+
+- name: Install Icinga2 Agent
+  yum:
+     name: 
+     - icinga2
+     state: present 
+
+- name: Add KB Icinga2 Plugins
+  unarchive:
+    src: files/nagios-additional-plugins.tar.bz
+    dest: "{{ Icinga2AgentPluginsDir }}/"
+
+- name: Install Icinga2 Plugins from Repo
+  yum:
+     name: 
+     - nagios-plugins-all
+     state: present 
+
+- name: Give permissions to Plugins folder
+  file:
+   path: "{{ Icinga2AgentPluginsDir }}"
+   mode: u=rwX,g=rX,o=rX
+   recurse: yes
+
+- name: Restart Icinga2 Service
+  systemd:
+    name: icinga2
+    state: restarted
+    
+- name: Enable Icinga2 Service
+  systemd:
+    name: icinga2
+    enabled: yes
+    masked: no
+
+- name: Add Icinga2 Master Certificate
+  copy:
+    src: files/master.crt
+    dest: "{{ Icinga2AgentCertsDir }}/"
+
+- name: Setup/Configure Icinga2 Agent
+  shell: |
+    icinga2 node setup --ticket "{{ Ticket_ID }}" \
+     --cn "{{ Agent_Hostname }}" \
+     --endpoint "{{ Icinga2MasterURL }},{{ Icinga2MasterIP }},{{ Icinga2MasterPort }}" \
+     --parent_host "{{ Icinga2MasterIP }}" \
+     --trustedcert "{{ Icinga2AgentCertsDir }}/master.crt" \
+     --zone "{{ Agent_Hostname }}" \
+     --accept-commands --accept-config --disable-confd
+  register: SetupAgent
+  run_once: true 
+
+- name: Restart Icinga2 Service to Apply Changes
+  systemd:
+    name: icinga2
+    state: restarted     
+...

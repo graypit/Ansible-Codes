@@ -1,0 +1,45 @@
+object Host "{{ Agent_Hostname }}" {
+   import "generic-host"
+   vars.ping = "no"
+   vars.client_endpoint = name
+   address = "{{ Agent_IP }}"
+   vars.notification["mail"] = {
+   groups = [ "devops" ]}
+}
+
+apply Service "Check Disk" {
+  import "generic-service"
+  check_command = "disk"
+  vars.disks["disk /"] = {
+  disk_partitions = "/"
+  }
+  vars.disk_partitions_excluded = ["/var/auth/docs"]
+  vars.disk_wfree = "10%"
+  vars.disk_cfree = "5%"
+  command_endpoint = host.vars.client_endpoint
+  assign where host.vars.client_endpoint && host.address == "{{ Agent_IP }}"
+}
+
+apply Service "Check CPU Load" {
+  import "generic-service"
+  check_command = "load"
+  command_endpoint = host.vars.client_endpoint
+  vars.load_wload1 = "30.0"
+  vars.load_cload1 = "32.0"
+  vars.load_wload5 = "30.0"
+  vars.load_cload5 = "32.0"
+  vars.load_wload15 = "30.0"
+  vars.load_cload15 = "32.0"
+  assign where host.vars.client_endpoint && host.address == "{{ Agent_IP }}"
+}
+
+
+apply Service "Check RAM" {
+  import "generic-service"
+  check_command = "mem"
+  command_endpoint = host.vars.client_endpoint
+  vars.mem_free = true
+  vars.mem_warning = "10"
+  vars.mem_critical = "5"
+  assign where host.vars.client_endpoint && host.address == "{{ Agent_IP }}"
+}

@@ -1,0 +1,9 @@
+object Endpoint "{{ Agent_Hostname }}" {
+  host = "{{ Agent_IP }}"
+}
+
+object Zone "{{ Agent_Hostname }}" {
+  endpoints = [ "{{ Agent_Hostname }}" ]
+
+  parent = "master"
+}

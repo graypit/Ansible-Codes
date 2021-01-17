@@ -1,0 +1,24 @@
+---
+- name: Generating Configuration files for Agent in Master Server
+  template: 
+    src: "{{ item.src }}"       
+    dest: "{{ item.dest }}"  
+  with_items:
+     - { src: 'templates/zone.j2',dest: "{{ Icinga2MasterConfDir }}/zones.d/{{ Agent_Hostname }}.conf"}   
+     - { src: 'templates/config.j2',dest: "{{ Icinga2MasterConfDir }}/conf.d/{{ Agent_Hostname }}.conf"}   
+
+- name: Check Configuration files
+  shell: sudo icinga2 daemon -C
+  register: ChkConfig
+  ignore_errors: yes
+
+- name: Check Configs Content
+  fail:
+    msg: There is no correct configs on Master Server
+  when: ChkConfig.rc != 0
+
+- name: Reload Icinga2
+  systemd:
+    name: icinga2
+    state: reloaded
+...     

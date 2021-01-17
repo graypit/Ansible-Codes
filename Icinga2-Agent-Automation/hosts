@@ -1,0 +1,17 @@
+[Icinga2_Master]
+Icinga2_Master_Server
+[Icinga2_Master:vars]
+ansible_ssh_host=192.168.1.22
+ansible_ssh_port=22
+ansible_user=root
+ansible_ssh_pass=root123pass
+
+[Icinga2_Agent]
+Icinga2_Agent_Server
+[Icinga2_Agent:vars]
+ansible_ssh_host=192.168.1.44
+ansible_ssh_port=22
+ansible_user=root
+ansible_ssh_pass=root123pass
+# // Uncomment line below when your agent server is Centos 8
+#ansible_python_interpreter=/usr/bin/python3

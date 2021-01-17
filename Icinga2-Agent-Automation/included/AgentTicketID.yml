@@ -1,0 +1,19 @@
+---
+- name: Get PKI Ticket ID from Master
+  shell: sudo icinga2 pki ticket --cn "{{ Agent_Hostname }}"
+  register: Ticket_ID
+  run_once: true
+
+- name: Set Master Server Facts
+  set_fact: 
+    Ticket_ID={{ Ticket_ID.stdout }}
+  when: Ticket_ID.rc == 0
+
+- name: Show Ticket ID
+  debug: var=Ticket_ID
+
+- name: Share Ticket_ID to Agent Server
+  add_host:
+    name: "Share_Ticket_ID"
+    Ticket_ID:  "{{ Ticket_ID }}"
+...

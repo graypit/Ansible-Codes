@@ -1,0 +1,12 @@
+---
+# Agent Server Hostname Condition Names:
+AgentHostnames: mycompany.local|myenv.local|servers.local
+# Icinga2 Master Variables
+Icinga2MasterURL: icinga-master.myenv.local
+Icinga2MasterIP: 192.168.1.22
+Icinga2MasterPort: 5665
+Icinga2MasterConfDir: /etc/icinga2
+# Icinga2 Agent Variables
+Icinga2AgentCertsDir: /var/lib/icinga2/certs
+Icinga2AgentPluginsDir: /usr/lib64/nagios
+...

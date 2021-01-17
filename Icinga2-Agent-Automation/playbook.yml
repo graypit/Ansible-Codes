@@ -1,0 +1,48 @@
+---
+- hosts: Icinga2_Agent
+  become: yes
+  vars_files:
+     - vars/GlobalVars.yml
+  tasks:
+   - include: included/AgentHostname.yml
+ 
+- hosts: Icinga2_Master
+  vars_files:
+     - vars/GlobalVars.yml
+  vars:
+   Agent_Hostname: "{{ hostvars['Share_Variables']['Agent_Hostname'] }}"
+   Agent_IP: "{{ hostvars['Share_Variables']['Agent_IP'] }}"                    
+  become: yes
+  tasks:
+   - include: included/AgentTicketID.yml
+
+- hosts: Icinga2_Agent
+  vars_files:
+     - vars/GlobalVars.yml
+  vars:
+   Ticket_ID: "{{ hostvars['Share_Ticket_ID']['Ticket_ID'] }}"
+  become: yes
+  tasks:
+   - include: included/CentOS_7/InstallAndConfigureAgent.yml
+     when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '7'
+
+- hosts: Icinga2_Agent
+  vars_files:
+     - vars/GlobalVars.yml
+  vars:
+   Ticket_ID: "{{ hostvars['Share_Ticket_ID']['Ticket_ID'] }}"
+  become: yes
+  tasks:
+   - include: included/CentOS_8/InstallAndConfigureAgent.yml 
+     when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '8'         
+
+- hosts: Icinga2_Master
+  vars_files:
+     - vars/GlobalVars.yml
+  vars:
+   Agent_Hostname: "{{ hostvars['Share_Variables']['Agent_Hostname'] }}"
+   Agent_IP: "{{ hostvars['Share_Variables']['Agent_IP'] }}"                    
+  become: yes
+  tasks:
+   - include: included/ConfigureAndCheckMaster.yml
+...

@@ -1,0 +1,35 @@
+---
+- name: Get Hostname from Agent Server
+  shell: cat /etc/hostname|egrep "{{ AgentHostnames }}"
+  register: Agent_Hostname
+  ignore_errors: yes
+
+- name: Check Agent Hostname
+  fail:
+    msg: There is no correct hostname on Agent Server.Please Check and Resolve it via setting correct one
+  when: Agent_Hostname.rc == 1
+
+- name: Set Agent Server Facts
+  set_fact: 
+    Agent_Hostname={{ Agent_Hostname.stdout }}
+  when: Agent_Hostname.rc == 0
+
+- name: Show Agent Hostname
+  debug: var=Agent_Hostname
+
+- name: Check Icinga2 Files
+  stat:
+    path: /etc/icinga2/zones.conf
+  register: file_details
+
+- name: Check Icinga2 Installation
+  fail:
+    msg: The Icinga2 Agent has already installed on Agent Server
+  when: file_details.stat.exists
+
+- name: Share Variables to Master Server
+  add_host:
+    name: "Share_Variables"
+    Agent_Hostname:  "{{ Agent_Hostname }}"
+    Agent_IP: "{{ ansible_default_ipv4.address }}"
+...  
