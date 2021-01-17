@@ -3,11 +3,10 @@
 
 ## What will this playbook do?
 #### This playbook will install Icinga2 Agent on your System
-P.S Playbook can automatically catch system version (CentOS 7&8)
 
 - On Agent Side:
 1. Prepare system
-2. Check correct hostname
+2. Check correct hostname (set it in `vars/GlobalVars.yml`)
 3. Install Icinga2 Agent
 4. Install All Plugins + Local
 5. Full Setup/Configure Icinga2 Agent
@@ -19,18 +18,19 @@ P.S Playbook can automatically catch system version (CentOS 7&8)
 4. Check service configurations
 5. Reload service to apply changes
 
-First of all after decryption you should edit your invertory file (hosts) and set Agent Host SSH Credentials.
+## How to Run ?
+### First of all you should edit your invertory file (hosts) and set Credentials/Values
+### Set the variables `vars/GlobalVars.yml` up
 - To Run playbook just execute the following command
 ```bash
 $ ansible-playbook playbook.yml
 ```
 
 ## What should I Do before executing?
-## `!!!` Make sure that your Agent Server has full access to Internet (8.8.8.8)
-## `!!!` Make sure that your Agent Server's DNS configured
+## `!!!` Make sure that your Agent Server has access to Internet
 #### Successfully Tested on CentOS 7 & 8
 
 | Latest stable release | [![release](https://img.shields.io/badge/release-latest-green.svg)]() |
 |---|---|
 
-Copyright &copy; 2020 DevOps-Team of Kapital Bank OJSC. All Rights Reserved
+Copyright &copy; 2021 | Habib Guliyev | All Rights Reserved
